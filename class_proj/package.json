@@ -1,5 +1,5 @@
 {
-  "name": "seo_proj",
+  "name": "class_proj",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -7,9 +7,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "check-types": "^7.4.0",
-    "lodash": "^4.17.11"
-  }
+  "license": "ISC"
 }
