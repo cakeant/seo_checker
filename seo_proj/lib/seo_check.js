@@ -14,6 +14,7 @@ var SEO_Check = module.exports = class SEO_Check{
 
 		this.options.maxStrongTagCnts = this.checkMaxStrongCnts( this.options.maxStrongTagCnts );
 
+		if(this.options.debug) console.log(options);
 		// console.log("constructor", this.name );
 		this._queue = [];
 		this._processing = false;

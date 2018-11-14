@@ -77,7 +77,7 @@ exports.checkMaxStrongCnts = function(cnt) {
 	if( NaN == parse ){
 		return defaultOptions.DEFAULT_MAX_STRONG_CNTS;
 	}
-	return parse;
+	return (parse<0)? 1:parse;
 }
 
 const isReadableStream = function(obj){
@@ -89,12 +89,12 @@ const isReadableStream = function(obj){
 }
 
 const checkStart = function($) {
-	// console.log("this", this.name, this._path);
+	// console.log("this", this.name, this._url);
 	//request succ
 	if( this.options.debug ) formatLog("request succ");
 	
 	formatLog("-------------------------");
-	formatLog("checking result:(",this.name,")");
+	formatLog("checking result:(",this._url,")");
 	this.result = $;
 }
 
@@ -134,18 +134,26 @@ const _checkImg = function() {
 	let tagList = $('img:not([alt])');
 	if( this.options.debug ) formatLog("img w/o alt cnt:",tagList.length);
 
-	( 0<tagList.length ) 
-		? formatLog("img:", ("Failed, "+tagList.length+" img tag(s) without alt attribute found").red) 
-		: formatLog("img:","OK".red);
+	if( 0<tagList.length ) {
+		formatLog("img:", ("Failed, "+tagList.length+" img tag(s) without alt attribute found").red) 
+		return tagList.length;
+	} else {
+		formatLog("img:","OK".red);
+		return 0;
+	}
 }
 const _checkATag = function() {
 	$ = this.result;
 	let tagList = $('a:not([rel])');
 	if( this.options.debug ) formatLog("a w/o rel cnt:",tagList.length);
 
-	( 0<tagList.length ) 
-		? formatLog("a tag:",("Failed, "+tagList.length+" a tag(s) without rel attribute found").red) 
-		: formatLog("a tag:","OK".red);
+	if( 0<tagList.length ) {
+		formatLog("a tag:",("Failed, "+tagList.length+" a tag(s) without rel attribute found").red) 
+		return true;
+	} else {
+		formatLog("a tag:","OK".red);
+		return false;
+	}
 }
 
 const _checkHead = function() {
@@ -183,8 +191,8 @@ const _checkHead = function() {
 
 	//check meta descriptions
 	( 0==cnt_des )
-		? formatLog("descriptions meta:","Failed, no description meta found".red)
-		: formatLog("descriptions meta:","OK".red);
+		? formatLog("description meta:","Failed, no description meta found".red)
+		: formatLog("description meta:","OK".red);
 	
 	//check meta keywords
 	( 0==cnt_kw )
@@ -197,11 +205,14 @@ const _checkStrong = function() {
 	$ = this.result;
 	//request succ
 	let tagList_st = $('strong');
-	if( this.options.debug ) formatLog("st cnt:",tagList_st.length);
+	if( this.options.debug ){
+		formatLog("st cnt:",tagList_st.length);
+		formatLog("max st cnt:",this.options.maxStrongTagCnts);
+	}
 
-	//check body for <strong> cnts <= options.maxStrongCnts
-	( tagList_st.length > this.options.maxStrongCnts )
-		? formatLog("strong tag check:","Failed, too many <strong> tags (<=",this.options.maxStrongCnts,")".red)
+	//check body for <strong> cnts <= options.maxStrongTagCnts
+	( tagList_st.length > this.options.maxStrongTagCnts )
+		? formatLog("strong tag check:",("Failed, too many <strong> tags (<="+this.options.maxStrongTagCnts+")").red)
 		: formatLog("strong tag check:","OK".red);
 }
 

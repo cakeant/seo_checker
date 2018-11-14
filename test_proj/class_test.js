@@ -1,22 +1,16 @@
 const fs = require('fs');
-// var Ganit = require('class_proj');
+const SEO_Check = require('seo_proj');
 
-// var calc = new Ganit(3);
-// var calc2 = new Ganit(3);
-// calc.add();
-// console.log(calc, calc2);
-// console.log(calc.add, calc2.add);
-
-
-var SEO_Check = require('seo_proj');
-var calc = new SEO_Check({tt:3, maxStrongTagCnts: 18});
-var calc2 = new SEO_Check({tt:4});
-const myReadStream = fs.createReadStream(__dirname + '/test.html');
-calc.loadStream(myReadStream);
-calc.checkImg()
+//load with readable stream
+const checker = new SEO_Check({debug:true, maxStrongTagCnts: 18});
+const myReadStream = fs.createReadStream(__dirname + '/test_vpon.html');
+checker.loadStream(myReadStream);
+checker.checkImg()
 	.checkATag()
 	.checkHead();
-calc2.loadFilePath(__dirname + '/test.html')
+
+//load with a file path
+var checker2 = new SEO_Check({maxStrongTagCnts:4});
+checker2.loadFilePath(__dirname + '/test_vpon.html')
 	.checkH1()
 	.checkStrong();
-// console.log(calc.loadStream, calc2.loadStream);
