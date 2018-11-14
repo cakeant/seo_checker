@@ -6,6 +6,7 @@ const check = require('check-types'),
     	defaults: require('lodash/defaults'),
     },
     cheerio = require('cheerio'),
+    colors = require('colors'),
 	fs = require('fs'),
     st = require('./static');
 
@@ -18,10 +19,10 @@ const formatLog = (...data) => {
 }
 
 exports.loadStream = function(inputRStream) {
-	console.log("loadStream", this.name );
+	// console.log("loadStream", this.name );
 
 	//check stream
-	if( false==this.isReadableStream(inputRStream) ){
+	if( false==isReadableStream(inputRStream) ){
 		formatError("input is not a stream, for file path please use loadFile instead");
 		return this;
 	}
@@ -37,17 +38,17 @@ exports.loadStream = function(inputRStream) {
 		inputRStream.on("end", ()=>{
 			// console.log('There will be no more data.');
 			
-			let data = Buffer.concat(chunks);
+			let data = chunks.join();
 			let str = data.toString();
 
-			checkStart(
+			// console.log( "loadStream", str );
+			checkStart.call(ins, 
 				cheerio.load(str, {
 					lowerCaseTags: true,
 					lowerCaseAttributeNames:true,
 					xmlMode:false,
 					_useHtmlParser2:true
-				}),
-				ins
+				})
 			);
 			resolve(inputRStream.path);
 		});
@@ -55,13 +56,13 @@ exports.loadStream = function(inputRStream) {
 	})
 
 	inputRStream.on('data', function(chunk){
-		chunks.push.bind(chunks);
+		chunks.push(chunk);
 	});
 	return this;
 }
 
 exports.loadFilePath = function(url) {
-	console.log("loadFilePath", this.name );
+	// console.log("loadFilePath", this.name );
 	//check url, options
 	if( false==check.nonEmptyString(url) ){
 		formatError("please check url, input url:", url);
@@ -71,7 +72,7 @@ exports.loadFilePath = function(url) {
 }
 
 exports.checkMaxStrongCnts = function(cnt) {
-	console.log("checkMaxStrongCnts", this.name );
+	// console.log("checkMaxStrongCnts", this.name );
 	let parse = parseInt(cnt);
 	if( NaN == parse ){
 		return defaultOptions.DEFAULT_MAX_STRONG_CNTS;
@@ -79,7 +80,7 @@ exports.checkMaxStrongCnts = function(cnt) {
 	return parse;
 }
 
-exports.isReadableStream = function(obj){
+const isReadableStream = function(obj){
 	// return true;
 	return obj &&
 		obj instanceof fs.ReadStream &&
@@ -87,66 +88,74 @@ exports.isReadableStream = function(obj){
 		typeof (obj._readableState === 'object');
 }
 
-const checkStart = ($, inst) => {
-	console.log("inst", inst.name, inst._path);
+const checkStart = function($) {
+	// console.log("this", this.name, this._path);
 	//request succ
-	if( inst.options.debug ) formatLog("request succ");
+	if( this.options.debug ) formatLog("request succ");
 	
 	formatLog("-------------------------");
-	formatLog("checking result:");
-	inst.result = $;
+	formatLog("checking result:(",this.name,")");
+	this.result = $;
 }
 
 exports.checkImg = function() {
-	console.log("checkImg",this.name);
-	if( this._req ) this._req.then( ()=>{
-		_checkImg(this);
-	});
+	// console.log("checkImg",this.name);
+	if( this._req ) this._req.then( 
+		()=>{ _checkImg.call(this); }
+	);
 	return this;
 }
 exports.checkATag = function() {
-	if( this._req ) this._req.then( _checkATag );
+	if( this._req ) this._req.then( 
+		()=>{_checkATag.call(this) }
+	);
 	return this;
 }
 exports.checkHead = function() {
-	if( this._req ) this._req.then( _checkHead );
+	if( this._req ) this._req.then( 
+		()=>{_checkHead.call(this) }
+	);
 	return this;
 }
 exports.checkStrong = function() {
-	if( this._req ) this._req.then( _checkStrong );
+	if( this._req ) this._req.then( 
+		()=>{_checkStrong.call(this)}
+	);
 	return this;
 }
 exports.checkH1 = function() {
-	if( this._req ) this._req.then( _checkH1 );
+	if( this._req ) this._req.then( 
+		()=>{_checkH1 .call(this);}
+	);
 	return this;
 }
-const _checkImg = (inst) => {
-	console.log("_checkImg",inst.name);
-	$ = inst.result;
+const _checkImg = function() {
+	$ = this.result;
 	let tagList = $('img:not([alt])');
-	if( inst.options.debug ) formatLog("img w/o alt cnt:",tagList.length);
+	if( this.options.debug ) formatLog("img w/o alt cnt:",tagList.length);
 
 	( 0<tagList.length ) 
-		? formatLog("img:","Failed, img tag without alt attribute found".red) 
+		? formatLog("img:", ("Failed, "+tagList.length+" img tag(s) without alt attribute found").red) 
 		: formatLog("img:","OK".red);
 }
-const _checkATag = () => {
+const _checkATag = function() {
 	$ = this.result;
 	let tagList = $('a:not([rel])');
 	if( this.options.debug ) formatLog("a w/o rel cnt:",tagList.length);
 
 	( 0<tagList.length ) 
-		? formatLog("a tag:","Failed, a tag without rel attribute found".red) 
+		? formatLog("a tag:",("Failed, "+tagList.length+" a tag(s) without rel attribute found").red) 
 		: formatLog("a tag:","OK".red);
 }
 
-const _checkHead = () => {
+const _checkHead = function() {
 	$ = this.result;
 	let head = $("head");
 	let tagList_tt = head.find("title");
 	let tagList_meta = head.find('meta[name]');
 	let cnt_des = 0;
 	let cnt_kw = 0;
+	// console.log(head);
 	tagList_meta.each( function( index, elem ) {
 		let val = $(elem).attr("name");
 		if( val ){
@@ -184,7 +193,7 @@ const _checkHead = () => {
 	
 }
 
-const _checkStrong = () => {
+const _checkStrong = function() {
 	$ = this.result;
 	//request succ
 	let tagList_st = $('strong');
@@ -196,7 +205,7 @@ const _checkStrong = () => {
 		: formatLog("strong tag check:","OK".red);
 }
 
-const _checkH1 = () => {
+const _checkH1 = function() {
 	$ = this.result;
 	//request succ
 	let tagList_h1 = $('h1');
