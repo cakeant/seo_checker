@@ -9,7 +9,7 @@ a simple tool to scan file/stream for defeats
 * easy to register customize SEO check rules
 
 ##installation
-``npm install seo_proj``
+``npm install @glorialin/seo_checker``
 
 ## usage
 
@@ -17,7 +17,7 @@ a simple tool to scan file/stream for defeats
 
 ```
 //include module
-const SEO_Check = require('seo_proj');
+const SEO_Check = require('@glorialin/seo_checker');
 
 //register new SEO rule
 SEO_Check.registerRule("checkRobotMeta",function() {
@@ -67,7 +67,6 @@ example error log:
 [seo-check] title: Failed, no title tag found
 [seo-check] description meta: Failed, no description meta found
 [seo-check] keywords meta: Failed, no keywords meta found
-*/
 ```
 #options
 
@@ -81,41 +80,41 @@ example error log:
 table of contents
 
 * [init](#init)
-	* [SEO_Check](#SEO_Check)
+	* [SEO_Check](#seo_check)
 * [enum](#enum)
-	* [e_OUTPUT](#e_OUTPUT)
+	* [e_OUTPUT](#e_output)
 * [load](#load)
-	* [loadFilePath](#loadFilePath)
-	* [loadStream](#loadStream)
-* [check APIs](#check_APIs)
-	* [checkStrong](#checkStrong)
-	* [checkImg](#checkImg)
-	* [checkATag](#checkATag)
-	* [checkHead](#checkHead)
-	* [checkH1](#checkH1)
+	* [loadFilePath](#loadfilepath)
+	* [loadStream](#loadstream)
+* [check APIs](#register-customize-check-api)
+	* [checkStrong](#checkstrong)
+	* [checkImg](#checkimg)
+	* [checkATag](#checkatag)
+	* [checkHead](#checkhead)
+	* [checkH1](#checkh1)
 	* [end](#end)
-* [register customize check API](#register_API)
-	* [registerRule](#registerRule)
-	* [formatLog](#formatLog)
-	* [formatLogWithTitle](#formatLogWithTitle)
+* [register customize check API](#register_api)
+	* [registerRule](#registerrule)
+	* [formatLog](#formatlog)
+	* [formatLogWithTitle](#formatlogwithtitle)
 
 
 # API
 <span id="init"></span>
 ##init
-<span id="SEO_Check"></span>
+<span id="seo_check"></span>
 ####SEO_Check
 new with a constructor
 
 	//include module
-	const SEO_Check = require('seo_proj');
+	const SEO_Check = require('@glorialin/seo_checker');
 	
 	//new instance
 	const checker = new SEO_Check({maxStrongTagCnts:4});
 
 <span id="enum"></span>
 ## enum
-<span id="e_OUTPUT"></span>
+<span id="e_output"></span>
 ####e_OUTPUT
 
 output option
@@ -126,7 +125,7 @@ output option
 
 <span id="load"></span>
 ##load
-<span id="loadFilePath"></span>
+<span id="loadfilepath"></span>
 ####loadFilePath
 
 #####parameter
@@ -141,7 +140,7 @@ output option
 
 ```
 //include module
-const SEO_Check = require('seo_proj');
+const SEO_Check = require('@glorialin/seo_checker');
 
 //new instance
 const checker = new SEO_Check({maxStrongTagCnts:4});
@@ -154,7 +153,7 @@ checker.loadFilePath(
 ).checkH1()
 	.checkStrong();
 ```
-<span id="loadStream"></span>
+<span id="loadstream"></span>
 ####loadStream
 
 
@@ -169,7 +168,7 @@ checker.loadFilePath(
 ```
 //include module
 const fs = require('fs');
-const SEO_Check = require('seo_proj');
+const SEO_Check = require('@glorialin/seo_checker');
 
 //new instance
 const checker = new SEO_Check({maxStrongTagCnts:4});
@@ -183,9 +182,9 @@ checker.loadStream(myReadStream,
 ).checkH1()
 	.checkStrong();
 ```
-<span id="check_APIs"></span>
+<span id="register-customize-check-api"></span>
 ##check APIs
-<span id="checkStrong"></span>
+<span id="checkstrong"></span>
 ####checkStrong
 
 ##### usage
@@ -199,7 +198,7 @@ checker.loadFilePath(__dirname + '/test.html'). checkStrong();
 ```
 
 
-<span id="checkImg"></span>
+<span id="checkimg"></span>
 ####checkImg
 
 ##### usage
@@ -209,7 +208,7 @@ check rule: Detect if any ``<img />`` tag without alt attribute
 checker.loadFilePath(__dirname + '/test.html').checkImg();
 ```
 
-<span id="checkATag"></span>
+<span id="checkatag"></span>
 ####checkATag
 
 ##### usage
@@ -219,7 +218,7 @@ Detect if any ``<a />`` tag without rel attribute
 checker.loadFilePath(__dirname + '/test.html').checkATag();
 ```
 
-<span id="checkHead"></span>
+<span id="checkhead"></span>
 ####checkHead
 
 ##### usage
@@ -249,7 +248,7 @@ the general rule is "description"(w/o s) instead.
 Reference: https://moz.com/learn/seo/meta-description 
 </p>
 
-<span id="checkH1"></span>
+<span id="checkh1"></span>
 ####checkH1
 
 ##### usage
@@ -291,9 +290,9 @@ strong tag:        OK
 */
 ```
 
-<span id="register_API"></span>
+<span id="register_api"></span>
 ##register customize check API
-<span id="registerRule"></span>
+<span id="registerrule"></span>
 #### SEO_Check.registerRule
 
 #####parameters
@@ -359,7 +358,7 @@ robot meta:        Failed, no robot meta found
 */
 ```
 
-<span id="formatLog"></span>
+<span id="formatlog"></span>
 #### formatLog
 
 #####parameters
@@ -380,7 +379,7 @@ test2 2 3
 */
 ```
 
-<span id="formatLogWithTitle"></span>
+<span id="formatlogwithtitle"></span>
 #### formatLogWithTitle
 
 #####parameters

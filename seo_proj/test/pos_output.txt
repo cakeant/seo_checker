@@ -1,0 +1,9 @@
+img:               OK 
+a tag:             OK 
+title:             OK 
+description meta:  OK 
+keywords meta:     OK 
+h1:                OK 
+strong tag:        OK 
+robot rule is working! 
+robot meta:        OK 

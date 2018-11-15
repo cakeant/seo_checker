@@ -1,0 +1,9 @@
+img:               Failed, 15 img tag(s) without alt attribute found 
+a tag:             Failed, 128 a tag(s) without rel attribute found 
+title:             Failed, no title tag found 
+description meta:  Failed, no description meta found 
+keywords meta:     Failed, no keywords meta found 
+h1:                Failed, more than 1 <h1> found 
+strong tag:        Failed, too many <strong> tags (<=4) 
+robot rule is working! 
+robot meta:        Failed, no robot meta found 
