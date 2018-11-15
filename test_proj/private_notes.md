@@ -34,3 +34,9 @@ https://blog.csdn.net/u014291497/article/details/75194456
 working logs
 * no lower case option for attrib data, so select meta[name="description"] will pass meta[name="Description"]
 	* trace: cheerio > htmlparser2: Parser.js Parser.prototype.onattribdata
+
+#testing
+https://glebbahmutov.com/blog/debugging-mocha-using-inspector/
+
+"test": "mocha --inspect-brk test/inte_1.js"
+chrome://inspect/#devices

@@ -6,24 +6,45 @@ const check = require('check-types'),
     	defaults: require('lodash/defaults'),
     },
     cheerio = require('cheerio'),
-    colors = require('colors'),
+    // colors = require('colors'),
 	fs = require('fs'),
-    st = require('./static');
+    st = require('./static'),
+    SEO_Check = require('./seo_check');
 
 
-const formatError = (...data) => {
-	console.error("[seo-check]",...data);
-}
-const formatLog = (...data) => {
-	console.log("[seo-check]",...data);
-}
-
-exports.loadStream = function(inputRStream) {
+exports.loadStream = function(inputRStream, eOutputVal, pathOrStream) {
+	// console.log(eOutputVal, pathOrStream);
+	switch( eOutputVal ){
+		case SEO_Check.e_OUTPUT.FILE:
+			this._outputOpt = eOutputVal;
+			if( check.nonEmptyString(pathOrStream) ){
+				this._outputStream = fs.createWriteStream(pathOrStream);
+			} else {
+				SEO_Check.formatError("path is null or empty, write to output_[time].txt");
+				this._outputStream = fs.createWriteStream('output_'+(new Date()).getTime()+'.txt');
+			}
+			break;
+		case SEO_Check.e_OUTPUT.STREAM:
+			if( isWritableStream(pathOrStream) ){	
+				this._outputOpt = eOutputVal;
+				this._outputStream = pathOrStream;
+			} else {
+				SEO_Check.formatError("input is not a stream, switch to console mode.");
+				this._outputOpt = SEO_Check.e_OUTPUT.CONSOLE;
+				this._outputStream = null;
+			}
+			break;
+		case SEO_Check.e_OUTPUT.CONSOLE:
+		default:
+			this._outputOpt = SEO_Check.e_OUTPUT.CONSOLE;
+			this._outputStream = null;
+			break;
+	}
 	// console.log("loadStream", this.name );
 
 	//check stream
 	if( false==isReadableStream(inputRStream) ){
-		formatError("input is not a stream, for file path please use loadFile instead");
+		SEO_Check.formatError("input is not a stream, for file path please use loadFile instead");
 		return this;
 	}
 
@@ -33,14 +54,18 @@ exports.loadStream = function(inputRStream) {
 	}
 	let chunks = [];
 	let ins = this;
-	this._req = new Promise(function(resolve, reject) {
-		// resolve with location of saved file
+
+	if( ins._outputStream ){
+		this._req = new Promise(function(resolve, reject) {
+			// resolve with location of saved file
+			ins._outputStream.on("close", ()=>{
+				resolve(inputRStream.path);
+			});
+			inputRStream.on("error", reject);
+		})
 		inputRStream.on("end", ()=>{
-			// console.log('There will be no more data.');
-			
 			let data = chunks.join();
 			let str = data.toString();
-
 			// console.log( "loadStream", str );
 			checkStart.call(ins, 
 				cheerio.load(str, {
@@ -50,10 +75,36 @@ exports.loadStream = function(inputRStream) {
 					_useHtmlParser2:true
 				})
 			);
-			resolve(inputRStream.path);
+			for( item of ins._queue ){
+				item.call(ins);
+			}
 		});
-		inputRStream.on("error", reject);
-	})
+	} else {
+		this._req = new Promise(function(resolve, reject) {
+			// resolve with location of saved file
+			inputRStream.on("end", ()=>{
+				// console.log('There will be no more data.');
+				
+				let data = chunks.join();
+				let str = data.toString();
+
+				// console.log( "loadStream", str );
+				checkStart.call(ins, 
+					cheerio.load(str, {
+						lowerCaseTags: true,
+						lowerCaseAttributeNames:true,
+						xmlMode:false,
+						_useHtmlParser2:true
+					})
+				);
+				for( item of ins._queue ){
+					item.call(ins);
+				}
+				resolve(inputRStream.path);
+			});
+			inputRStream.on("error", reject);
+		})
+	}
 
 	inputRStream.on('data', function(chunk){
 		chunks.push(chunk);
@@ -61,14 +112,14 @@ exports.loadStream = function(inputRStream) {
 	return this;
 }
 
-exports.loadFilePath = function(url) {
+exports.loadFilePath = function(url, ...data) {
 	// console.log("loadFilePath", this.name );
 	//check url, options
 	if( false==check.nonEmptyString(url) ){
-		formatError("please check url, input url:", url);
+		SEO_Check.formatError("please check url, input url:", url);
 		return this;
 	}
-	return this.loadStream( fs.createReadStream(url) );
+	return this.loadStream( fs.createReadStream(url),...data );
 }
 
 exports.checkMaxStrongCnts = function(cnt) {
@@ -80,6 +131,46 @@ exports.checkMaxStrongCnts = function(cnt) {
 	return (parse<0)? 1:parse;
 }
 
+exports.formatLogWithTitle = function(title,...data) {
+	if( check.nonEmptyString(title) ){
+		var times = Math.max(18-title.length,0);
+		for(let i=0;i<times;i++) title+=' ';
+	}
+	this.formatLog(title,...data);
+}
+
+exports.formatLog = function(...data) {
+	if( this._outputStream ) {
+		data.push('\r\n');
+		this._outputStream.write( (data.join(" ")),'UTF8');
+	} else {
+		console.log(...data);
+	}
+}
+
+exports.end = function(){
+	if( this._queue ) this._queue.push( () => {
+		(()=>{
+			if( this._outputStream ) {
+				this._outputStream.end();
+				this._outputStream = null;
+				console.log("file end exported");
+			}
+		}).call(this);
+	});
+	// if( this._req ) this._req.then( () => {
+	// 	(()=>{
+	// 		if( this._outputStream ) {
+	// 			this._outputStream.end();
+	// 			this._outputStream = null;
+	// 			console.log("file end exported");
+	// 			callback();
+	// 		}
+	// 	}).call(this);
+	// });
+	return this;
+}
+
 const isReadableStream = function(obj){
 	// return true;
 	return obj &&
@@ -87,143 +178,22 @@ const isReadableStream = function(obj){
 		typeof (obj._read === 'function') &&
 		typeof (obj._readableState === 'object');
 }
+const isWritableStream = function(obj){
+	// return true;
+	return obj &&
+		obj instanceof fs.WriteStream &&
+		typeof (obj._write === 'function') &&
+		typeof (obj._writableState === 'object') &&
+		true==obj.writable;
+}
 
 const checkStart = function($) {
 	// console.log("this", this.name, this._url);
 	//request succ
-	if( this.options.debug ) formatLog("request succ");
+	if( this.options.debug ) this.formatLog("request succ");
 	
-	formatLog("-------------------------");
-	formatLog("checking result:(",this._url,")");
+	console.log("-------------------------");
+	console.log("checking result:",this._url);
+	if(null!=this._outputStream) console.log("output to:",this._outputStream.path);
 	this.result = $;
-}
-
-exports.checkImg = function() {
-	// console.log("checkImg",this.name);
-	if( this._req ) this._req.then( 
-		()=>{ _checkImg.call(this); }
-	);
-	return this;
-}
-exports.checkATag = function() {
-	if( this._req ) this._req.then( 
-		()=>{_checkATag.call(this) }
-	);
-	return this;
-}
-exports.checkHead = function() {
-	if( this._req ) this._req.then( 
-		()=>{_checkHead.call(this) }
-	);
-	return this;
-}
-exports.checkStrong = function() {
-	if( this._req ) this._req.then( 
-		()=>{_checkStrong.call(this)}
-	);
-	return this;
-}
-exports.checkH1 = function() {
-	if( this._req ) this._req.then( 
-		()=>{_checkH1 .call(this);}
-	);
-	return this;
-}
-const _checkImg = function() {
-	$ = this.result;
-	let tagList = $('img:not([alt])');
-	if( this.options.debug ) formatLog("img w/o alt cnt:",tagList.length);
-
-	if( 0<tagList.length ) {
-		formatLog("img:", ("Failed, "+tagList.length+" img tag(s) without alt attribute found").red) 
-		return tagList.length;
-	} else {
-		formatLog("img:","OK".red);
-		return 0;
-	}
-}
-const _checkATag = function() {
-	$ = this.result;
-	let tagList = $('a:not([rel])');
-	if( this.options.debug ) formatLog("a w/o rel cnt:",tagList.length);
-
-	if( 0<tagList.length ) {
-		formatLog("a tag:",("Failed, "+tagList.length+" a tag(s) without rel attribute found").red) 
-		return true;
-	} else {
-		formatLog("a tag:","OK".red);
-		return false;
-	}
-}
-
-const _checkHead = function() {
-	$ = this.result;
-	let head = $("head");
-	let tagList_tt = head.find("title");
-	let tagList_meta = head.find('meta[name]');
-	let cnt_des = 0;
-	let cnt_kw = 0;
-	// console.log(head);
-	tagList_meta.each( function( index, elem ) {
-		let val = $(elem).attr("name");
-		if( val ){
-			val = val.toLowerCase();
-			switch( val ){
-				case "description":
-					cnt_des++;
-					break;
-				case "keywords":
-					cnt_kw++;
-					break;
-			}
-		}
-	})
-	if( this.options.debug ) {
-		formatLog("title cnt:",tagList_tt.length);
-		formatLog("des cnt:",cnt_des);
-		formatLog("kw cnt:",cnt_kw);
-	}
-
-	//check title
-	( 0==tagList_tt.length ) 
-		? formatLog("title:","Failed, no title tag found".red) 
-		: formatLog("title:","OK".red);
-
-	//check meta descriptions
-	( 0==cnt_des )
-		? formatLog("description meta:","Failed, no description meta found".red)
-		: formatLog("description meta:","OK".red);
-	
-	//check meta keywords
-	( 0==cnt_kw )
-		? formatLog("keywords meta:","Failed, no keywords meta found".red)
-		: formatLog("keywords meta:","OK".red);
-	
-}
-
-const _checkStrong = function() {
-	$ = this.result;
-	//request succ
-	let tagList_st = $('strong');
-	if( this.options.debug ){
-		formatLog("st cnt:",tagList_st.length);
-		formatLog("max st cnt:",this.options.maxStrongTagCnts);
-	}
-
-	//check body for <strong> cnts <= options.maxStrongTagCnts
-	( tagList_st.length > this.options.maxStrongTagCnts )
-		? formatLog("strong tag check:",("Failed, too many <strong> tags (<="+this.options.maxStrongTagCnts+")").red)
-		: formatLog("strong tag check:","OK".red);
-}
-
-const _checkH1 = function() {
-	$ = this.result;
-	//request succ
-	let tagList_h1 = $('h1');
-	if( this.options.debug ) formatLog("h1 cnt:",tagList_h1.length);
-
-	//check h1
-	( 1<tagList_h1.length )
-		? formatLog("h1:","Failed, more than 1 <h1> found".red)
-		: formatLog("h1:","OK".red);
 }
