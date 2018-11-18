@@ -1,3 +1,8 @@
+
+** dependency **
+npm: 5.6.0
+node: v8.11.1
+
 #structure
 
 ```

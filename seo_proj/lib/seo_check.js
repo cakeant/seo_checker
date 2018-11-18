@@ -1,10 +1,10 @@
 
 const defaultOptions = require('./options').default,
 	check = require('check-types'),
-    _ = {
+	_ = {
 		extend: require('lodash/assignIn'),
-    	defaults: require('lodash/defaults'),
-    };
+		defaults: require('lodash/defaults'),
+	};
 
 var SEO_Check = module.exports = class SEO_Check{
 	constructor(options) {
@@ -39,12 +39,12 @@ var SEO_Check = module.exports = class SEO_Check{
 		}
 	}
 	static get e_OUTPUT() {
-        return {
+		return {
 			FILE: 0,
 			STREAM: 1,
 			CONSOLE: 2
 		};
-    }
+	}
 
 	static formatError(...data) {
 		// if( this._outputStream ) {
@@ -57,6 +57,20 @@ var SEO_Check = module.exports = class SEO_Check{
 
 	async getPromise(){
 		return this._req;
+	}
+
+	static streamPromise(stream) {
+		return new Promise((resolve, reject) => {
+			stream.on('end', () => {
+				resolve('end');
+			});
+			stream.on('finish', () => {
+				resolve('finish');
+			});
+			stream.on('error', (error) => {
+				reject(error);
+			});
+		});
 	}
 }
 

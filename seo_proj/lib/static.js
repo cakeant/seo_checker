@@ -125,7 +125,7 @@ exports.loadFilePath = function(url, ...data) {
 exports.checkMaxStrongCnts = function(cnt) {
 	// console.log("checkMaxStrongCnts", this.name );
 	let parse = parseInt(cnt);
-	if( NaN == parse ){
+	if( isNaN(parse) ){
 		return defaultOptions.DEFAULT_MAX_STRONG_CNTS;
 	}
 	return (parse<0)? 1:parse;
@@ -140,6 +140,7 @@ exports.formatLogWithTitle = function(title,...data) {
 }
 
 exports.formatLog = function(...data) {
+	if( null==data ) data = [];
 	if( this._outputStream ) {
 		data.push('\r\n');
 		this._outputStream.write( (data.join(" ")),'UTF8');

@@ -1,6 +1,10 @@
 SEO_Checker
 ============
 
+** dependency **
+npm: 5.6.0
+node: v8.11.1
+
 ##description
 a simple tool to scan file/stream for defeats
 
@@ -100,9 +104,7 @@ table of contents
 
 
 # API
-<span id="init"></span>
 ##init
-<span id="seo_check"></span>
 ####SEO_Check
 new with a constructor
 
@@ -112,9 +114,7 @@ new with a constructor
 	//new instance
 	const checker = new SEO_Check({maxStrongTagCnts:4});
 
-<span id="enum"></span>
 ## enum
-<span id="e_output"></span>
 ####e_OUTPUT
 
 output option
@@ -123,9 +123,7 @@ output option
 * STREAM: use a WriteStream for output
 * CONSOLE: use console for output
 
-<span id="load"></span>
 ##load
-<span id="loadfilepath"></span>
 ####loadFilePath
 
 #####parameter
@@ -153,7 +151,6 @@ checker.loadFilePath(
 ).checkH1()
 	.checkStrong();
 ```
-<span id="loadstream"></span>
 ####loadStream
 
 
@@ -182,9 +179,7 @@ checker.loadStream(myReadStream,
 ).checkH1()
 	.checkStrong();
 ```
-<span id="register-customize-check-api"></span>
 ##check APIs
-<span id="checkstrong"></span>
 ####checkStrong
 
 ##### usage
@@ -198,7 +193,6 @@ checker.loadFilePath(__dirname + '/test.html'). checkStrong();
 ```
 
 
-<span id="checkimg"></span>
 ####checkImg
 
 ##### usage
@@ -208,7 +202,6 @@ check rule: Detect if any ``<img />`` tag without alt attribute
 checker.loadFilePath(__dirname + '/test.html').checkImg();
 ```
 
-<span id="checkatag"></span>
 ####checkATag
 
 ##### usage
@@ -218,7 +211,6 @@ Detect if any ``<a />`` tag without rel attribute
 checker.loadFilePath(__dirname + '/test.html').checkATag();
 ```
 
-<span id="checkhead"></span>
 ####checkHead
 
 ##### usage
@@ -248,7 +240,6 @@ the general rule is "description"(w/o s) instead.
 Reference: https://moz.com/learn/seo/meta-description 
 </p>
 
-<span id="checkh1"></span>
 ####checkH1
 
 ##### usage
@@ -258,7 +249,6 @@ Detect if a HTML have more than one ``<H1>`` tag.
 checker.loadFilePath(__dirname + '/test.html').checkH1();
 ```
 
-<span id="end"></span>
 ####end
 
 ##### usage
@@ -290,9 +280,7 @@ strong tag:        OK
 */
 ```
 
-<span id="register_api"></span>
 ##register customize check API
-<span id="registerrule"></span>
 #### SEO_Check.registerRule
 
 #####parameters
@@ -358,7 +346,6 @@ robot meta:        Failed, no robot meta found
 */
 ```
 
-<span id="formatlog"></span>
 #### formatLog
 
 #####parameters
@@ -379,7 +366,6 @@ test2 2 3
 */
 ```
 
-<span id="formatlogwithtitle"></span>
 #### formatLogWithTitle
 
 #####parameters
