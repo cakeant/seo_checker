@@ -19,7 +19,6 @@ const file = chaiFiles.file;
 //     })
 // })
 
-
 describe('unit test', function() {
 
 	it("checkMaxStrongCnts", function(){
@@ -33,7 +32,7 @@ describe('unit test', function() {
 	});
 
 	it("formatLog", async function(){
-		var output = __dirname + '/formatLog_test.txt';
+		var output = __dirname + '/output/formatLog_test.txt';
 		var checker = new SEO_Check({maxStrongTagCnts:4});
 		checker._outputStream = fs.createWriteStream( output );
 		checker.formatLog();
@@ -52,7 +51,7 @@ describe('unit test', function() {
 	});
 
 	it("formatLogWithTitle", async function(){
-		var output = __dirname + '/formatLogWithTitle_test.txt';
+		var output = __dirname + '/output/formatLogWithTitle_test.txt';
 		var checker = new SEO_Check({maxStrongTagCnts:4});
 		checker._outputStream = fs.createWriteStream( output );
 		checker.formatLogWithTitle();

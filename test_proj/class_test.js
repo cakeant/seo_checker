@@ -3,9 +3,9 @@ const SEO_Check = require('seo_checker');
 
 //load with readable stream, write to path
 const checker = new SEO_Check({debug:false, maxStrongTagCnts: 4});
-const myReadStream = fs.createReadStream(__dirname + '/test_vpon.html');
+const myReadStream = fs.createReadStream(__dirname + '/test.html');
 const myWriteStream = fs.createWriteStream(__dirname + '/pos_output.txt');
-checker.loadStream(myReadStream,SEO_Check.e_OUTPUT.STREAM, myWriteStream);
+checker.loadStream(myReadStream);
 // checker.formatLog();
 // checker.formatLog("test2",2,3);
 // checker.formatLogWithTitle();
@@ -24,21 +24,37 @@ SEO_Check.registerRule("checkRobotMeta",function() {
 		: this.formatLogWithTitle("robot meta:","OK");
 });
 
+let tmp = function(){
+	console.log("~~~~~");
+};
 checker.checkImg()
 	.checkATag()
 	.checkHead()
 	.checkH1()
 	.checkStrong()
-	.checkRobotMeta().end();
+	.checkRobotMeta();
+checker.end(tmp);
+	// .loadFilePath(__dirname + '/test_vpon.html')
+	// .checkATag()
+	// .checkHead();
 
 
 //load with a file path
-// var checker2 = new SEO_Check({maxStrongTagCnts:4});
-// checker2.loadFilePath(__dirname + '/test_vpon.html', SEO_Check.e_OUTPUT.FILE)
-// 	.checkH1()
-// 	.checkStrong().end()
-// 	.checkATag();
+var checker2 = new SEO_Check({maxStrongTagCnts:4});
+checker2.loadFilePath(__dirname + '/test_vpon.html')
+	.checkH1()
+	.checkStrong().end(function(){
+		console.log("!!!");
+	})
+	.checkATag();
 
+var checker3 = new SEO_Check({maxStrongTagCnts:4});
+checker3.loadFilePath(__dirname + '/test_no.html')
+	.checkH1()
+	.checkStrong().end(function(){
+		console.log("!!!");
+	})
+	.checkATag();
 
 //load with a file path, write to a stream
 // var checker3 = new SEO_Check();

@@ -1,3 +1,4 @@
+"use strict";
 
 const defaultOptions = require('./options').default,
 	check = require('check-types'),
@@ -7,6 +8,8 @@ const defaultOptions = require('./options').default,
 	};
 
 var SEO_Check = module.exports = class SEO_Check{
+
+	/* =================== constructors ================= */
 	constructor(options) {
 		this.options = _.defaults((options || {}), defaultOptions);
 
@@ -18,6 +21,8 @@ var SEO_Check = module.exports = class SEO_Check{
 		this.registerDefaultRules();
 	}
 
+	/* =================== static functions ================= */
+	//register rule to all SEO_Check instance(static)
 	static registerRule(name,callback){
 		if( this.hasOwnProperty(name) ) {
 			this.formatError("[Error] name already taken");
@@ -38,6 +43,8 @@ var SEO_Check = module.exports = class SEO_Check{
 			return this;
 		}
 	}
+
+	//enum getter for return type option
 	static get e_OUTPUT() {
 		return {
 			FILE: 0,
@@ -46,6 +53,7 @@ var SEO_Check = module.exports = class SEO_Check{
 		};
 	}
 
+	//a simple log error function (no dependency) 
 	static formatError(...data) {
 		// if( this._outputStream ) {
 		// 	data.push('\r\n');
@@ -55,26 +63,37 @@ var SEO_Check = module.exports = class SEO_Check{
 		// }
 	}
 
+	//a simple function to pack
+	static streamPromise(stream) {
+		if(stream && stream.on && typeof(stream.on)=="function" ){
+			return new Promise((resolve, reject) => {
+				stream.on('end', () => {
+					resolve('end');
+				});
+				stream.on('finish', () => {
+					resolve('finish');
+				});
+				stream.on('close', () => {
+					resolve('close');
+				});
+				stream.on('error', (error) => {
+					reject(error);
+				});
+			});
+		}
+		return null;
+	}
+
+	/* =================== public functions ================= */
 	async getPromise(){
 		return this._req;
 	}
-
-	static streamPromise(stream) {
-		return new Promise((resolve, reject) => {
-			stream.on('end', () => {
-				resolve('end');
-			});
-			stream.on('finish', () => {
-				resolve('finish');
-			});
-			stream.on('error', (error) => {
-				reject(error);
-			});
-		});
-	}
 }
 
+//other functions, main login
 _.extend(SEO_Check.prototype, require('./static'));
+
+//register check rules
 _.extend(SEO_Check.prototype, require('./rules'));
 
 

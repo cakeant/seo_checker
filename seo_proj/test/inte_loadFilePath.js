@@ -43,74 +43,9 @@ describe('testLoadFileStream', function() {
 	});
 
 	//integration test pos
-	it('integration test, loadStream, positive sample', async function() {
-		const input = __dirname + '/pos.html';
-		const output = __dirname + '/pos_output.txt';
-
-		const myReadStream = fs.createReadStream(input);
-		var checker = new SEO_Check({maxStrongTagCnts:4});
-		const myWriteStream = fs.createWriteStream( output );
-		checker.loadStream(myReadStream, SEO_Check.e_OUTPUT.STREAM, myWriteStream);
-		checker.checkImg()
-			.checkATag()
-			.checkHead()
-			.checkH1()
-			.checkStrong()
-			.checkRobotMeta().end();
-		await checker.getPromise();
-
-		//check file exsit
-		const tmpFile = file(output);
-		// console.log(tmpFile);
-		expect(tmpFile).to.exist;
-
-		//sample testing
-		expect(tmpFile).to.contain('img:               OK');
-		expect(tmpFile).to.contain('a tag:             OK');
-		expect(tmpFile).to.contain('title:             OK');
-		expect(tmpFile).to.contain('description meta:  OK');
-		expect(tmpFile).to.contain('keywords meta:     OK');
-		expect(tmpFile).to.contain('h1:                OK');
-		expect(tmpFile).to.contain('strong tag:        OK');
-		expect(tmpFile).to.contain('robot rule is working!');
-		expect(tmpFile).to.contain('robot meta:        OK');
-	});
-
-	it('integration test, loadStream, negitive sample', async function() {
-		const input = __dirname + '/neg.html';
-		const output = __dirname + '/neg_output.txt';
-
-		const myReadStream = fs.createReadStream(input);
-		var checker = new SEO_Check({maxStrongTagCnts:4});
-		const myWriteStream = fs.createWriteStream( output );
-		checker.loadStream(myReadStream, SEO_Check.e_OUTPUT.STREAM, myWriteStream);
-		checker.checkImg()
-			.checkATag()
-			.checkHead()
-			.checkH1()
-			.checkStrong()
-			.checkRobotMeta().end();
-		await checker.getPromise();
-		//check file exsit
-		expect(file(output)).to.exist;
-
-		//sample testing
-		const tmpFile = file(output);
-		expect(tmpFile).to.contains('img:               Failed, 15 img tag(s) without alt attribute found');
-		expect(tmpFile).to.contains('a tag:             Failed, 128 a tag(s) without rel attribute found');
-		expect(tmpFile).to.contains('title:             Failed, no title tag found');
-		expect(tmpFile).to.contains('description meta:  Failed, no description meta found');
-		expect(tmpFile).to.contains('keywords meta:     Failed, no keywords meta found');
-		expect(tmpFile).to.contains('h1:                Failed, more than 1 <h1> found');
-		expect(tmpFile).to.contains('strong tag:        Failed, too many <strong> tags (<=4)');
-		expect(tmpFile).to.contains('robot rule is working!');
-		expect(tmpFile).to.contains('robot meta:        Failed, no robot meta found');
-	});
-
-	//integration test pos
-	it('integration test, loadFilePath, positive sample', async function() {
-		const input = __dirname + '/pos.html';
-		const output = __dirname + '/pos_output.txt';
+	it('positive sample', async function() {
+		const input = __dirname + '/input/pos.html';
+		const output = __dirname + '/output/pos_output.txt';
 
 		var checker = new SEO_Check({maxStrongTagCnts:4});
 		const myWriteStream = fs.createWriteStream( output );
@@ -140,9 +75,39 @@ describe('testLoadFileStream', function() {
 		expect(tmpFile).to.contain('robot meta:        OK');
 	});
 
-	it('integration test, loadFilePath, negitive sample', async function() {
-		const input = __dirname + '/neg.html';
-		const output = __dirname + '/neg_output.txt';
+	it('negitive sample', async function() {
+		const input = __dirname + '/input/neg.html';
+		const output = __dirname + '/output/neg_output.txt';
+
+		var checker = new SEO_Check({maxStrongTagCnts:4});
+		const myWriteStream = fs.createWriteStream( output );
+		checker.loadFilePath(input, SEO_Check.e_OUTPUT.STREAM, myWriteStream);
+		checker.checkImg()
+			.checkATag()
+			.checkHead()
+			.checkH1()
+			.checkStrong()
+			.checkRobotMeta().end();
+		await checker.getPromise();
+		//check file exsit
+		expect(file(output)).to.exist;
+
+		//sample testing
+		const tmpFile = file(output);
+		expect(tmpFile).to.contains('img:               Failed, 15 img tag(s) without alt attribute found');
+		expect(tmpFile).to.contains('a tag:             Failed, 128 a tag(s) without rel attribute found');
+		expect(tmpFile).to.contains('title:             Failed, no title tag found');
+		expect(tmpFile).to.contains('description meta:  Failed, no description meta found');
+		expect(tmpFile).to.contains('keywords meta:     Failed, no keywords meta found');
+		expect(tmpFile).to.contains('h1:                Failed, more than 1 <h1> found');
+		expect(tmpFile).to.contains('strong tag:        Failed, too many <strong> tags (<=4)');
+		expect(tmpFile).to.contains('robot rule is working!');
+		expect(tmpFile).to.contains('robot meta:        Failed, no robot meta found');
+	});
+
+	it('empty sample', async function() {
+		const input = __dirname + '/input/neg.html';
+		const output = __dirname + '/output/neg_output.txt';
 
 		var checker = new SEO_Check({maxStrongTagCnts:4});
 		const myWriteStream = fs.createWriteStream( output );

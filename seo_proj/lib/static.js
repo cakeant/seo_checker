@@ -1,3 +1,4 @@
+"use strict";
 
 const check = require('check-types'),
     defaultOptions = require('./options').default,
@@ -12,7 +13,12 @@ const check = require('check-types'),
     SEO_Check = require('./seo_check');
 
 
+/* =================== public methods ================= */
+
+//start loading process with readable stream
 exports.loadStream = function(inputRStream, eOutputVal, pathOrStream) {
+	resetLoading.call(this);
+
 	// console.log(eOutputVal, pathOrStream);
 	switch( eOutputVal ){
 		case SEO_Check.e_OUTPUT.FILE:
@@ -56,13 +62,7 @@ exports.loadStream = function(inputRStream, eOutputVal, pathOrStream) {
 	let ins = this;
 
 	if( ins._outputStream ){
-		this._req = new Promise(function(resolve, reject) {
-			// resolve with location of saved file
-			ins._outputStream.on("close", ()=>{
-				resolve(inputRStream.path);
-			});
-			inputRStream.on("error", reject);
-		})
+		this._req = SEO_Check.streamPromise(ins._outputStream);
 		inputRStream.on("end", ()=>{
 			let data = chunks.join();
 			let str = data.toString();
@@ -75,35 +75,28 @@ exports.loadStream = function(inputRStream, eOutputVal, pathOrStream) {
 					_useHtmlParser2:true
 				})
 			);
-			for( item of ins._queue ){
+			for( var item of ins._queue ){
 				item.call(ins);
 			}
 		});
 	} else {
-		this._req = new Promise(function(resolve, reject) {
-			// resolve with location of saved file
-			inputRStream.on("end", ()=>{
-				// console.log('There will be no more data.');
-				
-				let data = chunks.join();
-				let str = data.toString();
+		this._req = SEO_Check.streamPromise(inputRStream);
+		this._req.then(()=>{
+			let data = chunks.join();
+			let str = data.toString();
 
-				// console.log( "loadStream", str );
-				checkStart.call(ins, 
-					cheerio.load(str, {
-						lowerCaseTags: true,
-						lowerCaseAttributeNames:true,
-						xmlMode:false,
-						_useHtmlParser2:true
-					})
-				);
-				for( item of ins._queue ){
-					item.call(ins);
-				}
-				resolve(inputRStream.path);
-			});
-			inputRStream.on("error", reject);
-		})
+			checkStart.call(ins, 
+				cheerio.load(str, {
+					lowerCaseTags: true,
+					lowerCaseAttributeNames:true,
+					xmlMode:false,
+					_useHtmlParser2:true
+				})
+			);
+			for( let item of ins._queue ){
+				item.call(ins);
+			}
+		});
 	}
 
 	inputRStream.on('data', function(chunk){
@@ -112,16 +105,25 @@ exports.loadStream = function(inputRStream, eOutputVal, pathOrStream) {
 	return this;
 }
 
-exports.loadFilePath = function(url, ...data) {
+//start loading process with target path stream
+exports.loadFilePath = function(path, ...data) {
+	resetLoading.call(this);
 	// console.log("loadFilePath", this.name );
-	//check url, options
-	if( false==check.nonEmptyString(url) ){
-		SEO_Check.formatError("please check url, input url:", url);
+	//check path, options
+	if( false==check.nonEmptyString(path) ){
+		SEO_Check.formatError("path error, please check path, input path:", path);
 		return this;
 	}
-	return this.loadStream( fs.createReadStream(url),...data );
+
+	if( false==fs.existsSync(path) ){
+		SEO_Check.formatError("file not exsit, please check path, input path:", path);
+		return this;
+	}
+
+	return this.loadStream( fs.createReadStream(path),...data );
 }
 
+//check max strong cnts
 exports.checkMaxStrongCnts = function(cnt) {
 	// console.log("checkMaxStrongCnts", this.name );
 	let parse = parseInt(cnt);
@@ -149,13 +151,19 @@ exports.formatLog = function(...data) {
 	}
 }
 
-exports.end = function(){
+exports.end = function(callback){
+	/*  edit to queue...or there should be 2 layers of promise
+		1 for loading, 1 for writing 
+	*/
 	if( this._queue ) this._queue.push( () => {
 		(()=>{
 			if( this._outputStream ) {
 				this._outputStream.end();
 				this._outputStream = null;
 				console.log("file end exported");
+			}
+			if( check.function(callback) ){
+				callback();
 			}
 		}).call(this);
 	});
@@ -172,6 +180,15 @@ exports.end = function(){
 	return this;
 }
 
+/* =================== private methods ================= */
+//reset parameters before loading
+const resetLoading = function(){
+	this._req = null;
+	this._url = null;
+	this._queue = [];
+}
+
+//test is readable stream....this can be static (fs dependency)
 const isReadableStream = function(obj){
 	// return true;
 	return obj &&
@@ -179,6 +196,8 @@ const isReadableStream = function(obj){
 		typeof (obj._read === 'function') &&
 		typeof (obj._readableState === 'object');
 }
+
+//test is writable stream....this can be static (fs dependency)
 const isWritableStream = function(obj){
 	// return true;
 	return obj &&
@@ -188,6 +207,7 @@ const isWritableStream = function(obj){
 		true==obj.writable;
 }
 
+//start callback when finish loading
 const checkStart = function($) {
 	// console.log("this", this.name, this._url);
 	//request succ
