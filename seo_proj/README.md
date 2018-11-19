@@ -2,11 +2,20 @@ SEO_Checker
 ============
 
 ** dependency **
-npm: 5.6.0
-node: v8.11.1
+
+* npm: 5.6.0
+* node: v8.11.1
+
+** warning **
+
+If you are looking for a general SEO checker, this might not be what you are looking for for now.
+
+(Just a small homework project with predefined rules listed [below](#user-content-api-table), will upgrade after the check, 
+
+You can still achieve a general SEO checker by registering your own function like og tag tester, etc. Please check [register customize check API](#user-content-register-customize-check-api) for detail. )
 
 ##description
-a simple tool to scan file/stream for defeats
+a simple tool to scan file/stream for defacts
 
 * support input: ReadStream / file path
 * support output: WriteStream / file path / log
@@ -63,7 +72,7 @@ example error log:
 
 ```
 [seo-check] -------------------------
-[seo-check] checking result:( [filepath]/test_vpon.html )
+[seo-check] checking result:( [filepath]/test.html )
 [seo-check] h1: Failed, more than 1 <h1> found
 [seo-check] strong tag check: Failed, too many <strong> tags (<=4)
 [seo-check] img: Failed, 17 img tag(s) without alt attribute found
@@ -90,14 +99,14 @@ table of contents
 * [load](#load)
 	* [loadFilePath](#loadfilepath)
 	* [loadStream](#loadstream)
-* [check APIs](#register-customize-check-api)
+* [check APIs](#user-content-check-apis)
 	* [checkStrong](#checkstrong)
 	* [checkImg](#checkimg)
 	* [checkATag](#checkatag)
 	* [checkHead](#checkhead)
 	* [checkH1](#checkh1)
 	* [end](#end)
-* [register customize check API](#register_api)
+* [register customize check API](#user-content-register-customize-check-api)
 	* [registerRule](#registerrule)
 	* [formatLog](#formatlog)
 	* [formatLogWithTitle](#formatlogwithtitle)
@@ -158,7 +167,7 @@ checker.loadFilePath(
 |--------------|------------------------------------------------------------------------------------------------------------------------------------------|------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | inputRStream | input readable stream                                                                                                                    | ReadStream                   | no, will not load if invalid                                                                                                                                    |
 | eOutputVal   | enum option for output                                                                                                                   | SEO\_Check.e\_OUTPUT (integer) | SEO\_Check.e\_OUTPUT.CONSOLE                                                                                                                                               |
-| pathOrStream | output destination input should be path string when eOutputVal==eOutputVal.FILE  should be WriteStreamwhen eOutputVal==eOutputVal.STREAM | string/WriteStream           | no, will output to output_[time].txt when path is invalid for eOutputVal==eOutputVal.FILE  will output to console when path is invalid for eOutputVal==eOutputVal.STREAM |
+| pathOrStream | output destination input should be path string when eOutputVal==eOutputVal.FILE / should be WriteStreamwhen eOutputVal==eOutputVal.STREAM | string/WriteStream           | no, will output to output_[time].txt when path is invalid for eOutputVal==eOutputVal.FILE / will output to console when path is invalid for eOutputVal==eOutputVal.STREAM |
 
 #####usage
 
@@ -169,7 +178,7 @@ const SEO_Check = require('@glorialin/seo_checker');
 
 //new instance
 const checker = new SEO_Check({maxStrongTagCnts:4});
-const myReadStream = fs.createReadStream(__dirname + '/test_vpon.html');
+const myReadStream = fs.createReadStream(__dirname + '/test.html');
 const myWriteStream = fs.createWriteStream(__dirname + '/result.txt');
 
 //load file with path & set check rule
@@ -251,11 +260,17 @@ checker.loadFilePath(__dirname + '/test.html').checkH1();
 
 ####end
 
+| name         | description                                                                                                                              | type                         | default                                                                                                                                                                  |
+|--------------|------------------------------------------------------------------------------------------------------------------------------------------|------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| callback | a callback function called on end calling end()                                                                                                                    | function                   | no, will not been called if invalid                                                                                                                                    |
+
 ##### usage
 use to close WriteStream of output
 
 ```
-checker.loadFilePath(__dirname + '/test.html').end();
+checker.loadFilePath(__dirname + '/test.html').end(function(){
+	console.log("on end");
+});
 ```
 if any check rule apply after end(), the output will be switch to console automatically
 
@@ -263,14 +278,17 @@ if any check rule apply after end(), the output will be switch to console automa
 ```
 checker.loadFilePath(__dirname + '/test.html', SEO_Check.e_OUTPUT.FILE)
 	.checkH1()
-	.checkStrong().end()
+	.checkStrong().end( ()=>{console.log("on end");} )
 	.checkATag();
 
 /*console output
+(a tag check auto switch to log
+since the file has been closed)
 -------------------------
-checking result: /Library/WebServer/Documents/projects/201811_sb_hw/test_proj/test_vpon.html
+checking result: /Library/WebServer/Documents/projects/201811_sb_hw/test_proj/test.html
 output to: output_1542256178825.txt
 file end exported
+on end
 a tag:             Failed, 121 a tag(s) without rel attribute found
 */
 
@@ -321,7 +339,7 @@ to use
 const checker = new SEO_Check({debug:false, maxStrongTagCnts: 18});
 
 //load with readable stream
-const myReadStream = fs.createReadStream(__dirname + '/test_vpon.html');
+const myReadStream = fs.createReadStream(__dirname + '/test.html');
 checker.loadStream(myReadStream,SEO_Check.e_OUTPUT.LOG);
 
 //apply rule checkRobotMeta
