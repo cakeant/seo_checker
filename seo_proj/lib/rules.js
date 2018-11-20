@@ -6,6 +6,7 @@ exports.registerDefaultRules = function(){
 	SEO_Check.registerRule("checkHead",checkHead);
 	SEO_Check.registerRule("checkStrong",checkStrong);
 	SEO_Check.registerRule("checkH1",checkH1);
+	SEO_Check.registerRule("checkOGTag",checkOGTag);
 }
 
 const checkImg = function() {
@@ -106,4 +107,53 @@ const checkH1 = function() {
 	( 1<tagList_h1.length )
 		? this.formatLogWithTitle("h1:","Failed, more than 1 <h1> found")
 		: this.formatLogWithTitle("h1:","OK");
+}
+
+
+const checkOGTag = function() {
+	$ = this.result;
+	let head = $("head");
+	let tagList_meta = head.find('meta[property]');
+	let cnt_url = 0;
+	let cnt_title = 0;
+	let cnt_img = 0;
+	// console.log(head);
+	tagList_meta.each( function( index, elem ) {
+		let val = $(elem).attr("property");
+		if( val ){
+			val = val.toLowerCase();
+			switch( val ){
+				case "og:url":
+					cnt_url++;
+					break;
+				case "og:title":
+					cnt_title++;
+					break;
+				case "og:image":
+					cnt_img++;
+					break;
+			}
+		}
+	})
+	if( this.options.debug ) {
+		this.formatLog("og:url meta:",cnt_url);
+		this.formatLog("og:title meta:",cnt_title);
+		this.formatLog("og:image meta:",cnt_img);
+	}
+
+	//check title
+	( 0==cnt_url ) 
+		? this.formatLogWithTitle("og:url","Failed, no og:url meta found") 
+		: this.formatLogWithTitle("og:url","OK");
+
+	//check meta descriptions
+	( 0==cnt_title )
+		? this.formatLogWithTitle("og:title","Failed, no og:title meta found")
+		: this.formatLogWithTitle("og:title","OK");
+	
+	//check meta keywords
+	( 0==cnt_img )
+		? this.formatLogWithTitle("og:image","Failed, no og:image meta found")
+		: this.formatLogWithTitle("og:image","OK");
+	
 }

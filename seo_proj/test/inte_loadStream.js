@@ -56,7 +56,8 @@ describe('integration test loadStream', function() {
 			.checkHead()
 			.checkH1()
 			.checkStrong()
-			.checkRobotMeta().end();
+			.checkRobotMeta()
+			.checkOGTag().end();
 		await checker.getPromise();
 
 		//check file exsit
@@ -89,7 +90,8 @@ describe('integration test loadStream', function() {
 			.checkHead()
 			.checkH1()
 			.checkStrong()
-			.checkRobotMeta().end();
+			.checkRobotMeta()
+			.checkOGTag().end();
 		await checker.getPromise();
 		//check file exsit
 		expect(file(output)).to.exist;

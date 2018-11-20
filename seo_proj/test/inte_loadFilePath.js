@@ -55,7 +55,8 @@ describe('testLoadFileStream', function() {
 			.checkHead()
 			.checkH1()
 			.checkStrong()
-			.checkRobotMeta().end();
+			.checkRobotMeta()
+			.checkOGTag().end();
 		await checker.getPromise();
 
 		//check file exsit
@@ -87,7 +88,8 @@ describe('testLoadFileStream', function() {
 			.checkHead()
 			.checkH1()
 			.checkStrong()
-			.checkRobotMeta().end();
+			.checkRobotMeta()
+			.checkOGTag().end();
 		await checker.getPromise();
 		//check file exsit
 		expect(file(output)).to.exist;
